@@ -3,7 +3,8 @@
 namespace App\Chess\Commands;
 
 use App\Chess\ChessBoard;
-use App\Chess\Presenters\ConsoleGridPresenter;
+use App\Chess\Presenters\ConsoleStringPresenter;
+use App\Chess\Presenters\ConsoleTablePresenter;
 use Illuminate\Console\Command;
 
 class CalculateOutcomes extends Command
@@ -26,39 +27,39 @@ class CalculateOutcomes extends Command
     protected $description = 'Calculate outcomes of chessboard with given grid size';
 
     /**
-     * @var ConsoleGridPresenter
-     */
-    protected $gridPresenter;
-
-    /**
-     * Create a new command instance.
-     *
-     * @return void
-     */
-    public function __construct()
-    {
-        parent::__construct();
-
-        $this->gridPresenter = new ConsoleGridPresenter();
-    }
-
-    /**
      * Execute the console command.
      *
      * @return mixed
      */
     public function handle()
     {
+        $startTime = microtime(true);
+        if ($this->option('prettyPrint')) {
+            $presenter = new ConsoleTablePresenter();
+        } else {
+            $presenter = new ConsoleStringPresenter();
+        }
+
         $gridSize = (int) $this->argument('gridSize');
         $chessBoard = new ChessBoard($gridSize);
 
-        $results = $chessBoard->calculateOutcomes();
+        $results = $chessBoard->calculateOutcomes($this->argument('startingPoint'));
+        $calculationTime = microtime(true) - $startTime;
 
-        foreach ($results as $result) {
-            list($headers, $data) = $this->gridPresenter->present($result);
-            $this->table($headers, $data);
+        foreach ($results as $solution => $result) {
+            $this->info('Solution ' . ($solution + 1));
+            if ($presenter instanceof ConsoleTablePresenter) {
+                list($headers, $data) = $presenter->present($result);
+                $this->table($headers, $data);
+                continue;
+            }
+
+            $this->info(
+                $presenter->present($result)
+            );
         }
 
         $this->info('Total amount of solutions: ' . $results->count());
+        $this->info('Calculation took ' . $calculationTime . ' seconds');
     }
 }

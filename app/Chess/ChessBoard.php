@@ -35,13 +35,19 @@ class ChessBoard
     }
 
     /**
+     * @param string|null $startingPoint
      * @return \Illuminate\Support\Collection
-     * @throws Exceptions\FieldDoesNotExistException
      */
-    public function calculateOutcomes()
+    public function calculateOutcomes(string $startingPoint = null)
     {
         $outcomeCalculator = new OutcomeCalculator($this->gridSize);
 
-        return $outcomeCalculator->calculate([]);
+        if (null === $startingPoint) {
+            $placedPoints = [];
+        } else {
+            $placedPoints = [$startingPoint];
+        }
+
+        return $outcomeCalculator->calculate($placedPoints);
     }
 }

@@ -6,7 +6,7 @@ use App\Chess\Data\Field;
 use App\Chess\Data\Grid;
 use Illuminate\Support\Collection;
 
-class ConsoleGridPresenter
+class ConsoleTablePresenter
 {
 
     /**
